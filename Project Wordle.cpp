@@ -3,32 +3,75 @@
 #include <fstream>
 #include <vector>
 #include <time.h>
+#include <unordered_map>
 
 using namespace std;
 
-void wordle(string word_of_the_day, string user_guess) {
+bool wordle(string word_of_the_day, string user_guess) {
+
+    int results[5];
+    // 1 for black, 2 for yellow, 3 for green
+    for (int i = 0; i < 5; i++) {
+        results[i] = 0;
+    }
+    // initialized the array with 0
+
+    unordered_map<char, int> freq;   // stores frequency of characters in the word_of_the_day
+
+    for(int i = 0; i < 5; i++) {
+        freq[word_of_the_day[i]]++;
+    }
+    // frequency of each character stored
+
     for(int i = 0; i < 5; i++) {
         if(word_of_the_day[i] == user_guess[i]) {
-            cout << user_guess[i] << ": " << "G" << endl;
-        }
-        else if(word_of_the_day.find(user_guess[i]) != std::string::npos) {
-            cout << user_guess[i] << ": " << "Y" << endl;
-        }
-        else {
-            cout << user_guess[i] << ": " << "B" << endl;
+            //count++;
+            results[i] = 3;
+            freq[user_guess[i]]--;              // decrease frequency so that no. of yellows = no. of chars left
         }
     }
+
+    for(int i = 0; i < 5; i++) {
+        if(results[i] == 3) {
+            continue;                 // we won't do anything with letters already in the correct place
+        }
+        if(freq.count(user_guess[i]) > 0 && freq[user_guess[i]] > 0) {
+            results[i] = 2;           // if the character is present in the map, make it yellow
+            freq[user_guess[i]]--;    // no. of yellows = no. of frequency of characters left
+        }
+        else {
+            results[i] = 1;           // if the character is not present in the map, make it black i.e. 0 frequency
+        }
+    }
+
+    int count = 0;      // will count no. of characters which are at their correct place
+
+    for(int i = 0; i < 5; i++) {
+        if(results[i] == 1) {
+            cout << user_guess[i] << ": " << "Black" << endl;
+        }
+        if(results[i] == 2) {
+            cout << user_guess[i] << ": " << "Yellow" << endl;
+        }
+        if(results[i] == 3) {
+            count++;
+            cout << user_guess[i] << ": " << "Green" << endl;
+        }
+    }
+
+    if(count == 5) {
+        return true;                 // returning true would mean the game is won and thus end the game
+    }
+    return false;
 }
 
 int main() {
 
     string line;
     vector<string> lines;
-    cout << "Check 1" << endl;
     srand(time(0));
 
     ifstream file("Words.txt");
-    cout << "Check 2" << endl;
 
     int total_lines = 0;
     while(getline(file,line)) {
@@ -38,15 +81,35 @@ int main() {
  
     int random_number = rand() % total_lines;
     
-    cout << "Check" << endl;
+    cout << "Welcome to Wordle" << endl;
 
     string word_of_the_day = lines[random_number];
-    
-    for(int i = 0; i < 6; i++) {
-        cout << "User Guess 1:" << endl;
+
+    int i;
+    bool a = false;
+
+    for(i = 0; i < 6; i++) {
+        cout << "User Guess " << i + 1 << ": " << endl;
         string user_guess;
         cin >> user_guess;
-        wordle(word_of_the_day, user_guess);
+        a = wordle(word_of_the_day, user_guess);
+        if(a) {
+            break;
+        }
     }
+    if(!a) {
+        cout << "Defeat!" << endl;
+        cout << "The word of the day was: " << word_of_the_day << endl;
+    }
+    else {
+        cout << "Victory!" << endl;
+    }
+
     
 }
+
+/*
+Had problems in test cases where word of the day
+1) "today": On guess taboo, it should have G Y B Y B, but it was giving G Y B Y Y
+2) "three": 
+*/
