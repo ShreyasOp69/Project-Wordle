@@ -4,6 +4,7 @@
 #include <vector>
 #include <time.h>
 #include <unordered_map>
+#include <algorithm>
 
 using namespace std;
 
@@ -65,6 +66,17 @@ bool wordle(string word_of_the_day, string user_guess) {
     return false;
 }
 
+template <typename T>
+bool contains(vector<T> vec, const T & elem)
+{
+    bool result = false;
+    if( find(vec.begin(), vec.end(), elem) != vec.end() )
+    {
+        result = true;
+    }
+    return result;
+}
+
 int main() {
 
     string line;
@@ -92,6 +104,17 @@ int main() {
         cout << "User Guess " << i + 1 << ": " << endl;
         string user_guess;
         cin >> user_guess;
+
+        while(user_guess.size() != 5 || !contains(lines, user_guess)) {
+            if(user_guess.size() != 5) {
+                cout << "Word should be of 5 letters, try again!" << endl;
+            }
+            else if(!contains(lines, user_guess)) {
+                cout << "Word not in the list!" << endl;
+            }
+            cin >> user_guess;
+        }
+        
         a = wordle(word_of_the_day, user_guess);
         if(a) {
             break;
@@ -111,5 +134,5 @@ int main() {
 /*
 Had problems in test cases where word of the day
 1) "today": On guess taboo, it should have G Y B Y B, but it was giving G Y B Y Y
-2) "three": 
+2) "three": Had problems with guesses ellee (gave Y B B G G instead of B B B G G)
 */
